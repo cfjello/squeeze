@@ -1,0 +1,113 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug.ts",
+            "request": "launch",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}\\debug.ts",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "run",
+                "--unstable",
+                "--inspect-brk=127.0.0.1:9300",
+                "--allow-all"
+            ],
+            "attachSimplePort": 9300,
+            "outputCapture": "std"
+        },
+
+
+        {
+            "request": "launch",
+            "name": "Deno RUN",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "run",
+                "--unstable",
+                "--inspect-brk",
+                "--allow-all",
+                "${file}"
+            ],
+            "attachSimplePort": 9300,
+            "outputCapture": "std"
+        },
+        {
+            "name": "T5 <file>",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "test", 
+                "--inspect-brk=127.0.0.1:9305",
+                "-A", 
+                "--unstable", 
+                "${file}"
+            ],
+            "attachSimplePort": 9305
+        },
+        {
+            "name": "T6 <file>",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "test", 
+                "--inspect-brk=127.0.0.1:9306",
+                "-A", 
+                "--unstable", 
+                "${file}"
+            ],
+            "attachSimplePort": 9306
+        },
+        {
+            "name": "T7 <file>",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "test", 
+                "--inspect-brk=127.0.0.1:9307",
+                "-A", 
+                "--unstable", 
+                "${file}"
+            ],
+            "attachSimplePort": 9307
+        },
+        {
+            "name": "T8 <file>",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "test", 
+                "--inspect-brk=127.0.0.1:9308",
+                "-A", 
+                "--unstable", 
+                "${file}"
+            ],
+            "attachSimplePort": 9308
+        },
+        {
+            "name": "T9 <file>",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "C:\\Users\\claus\\.deno\\bin\\deno.exe",
+            "runtimeArgs": [
+                "test", 
+                "--inspect-brk=127.0.0.1:9309",
+                "-A", 
+                "--unstable", 
+                "${file}"
+            ],
+            "attachSimplePort": 9309
+        },
+
+    ],
+}

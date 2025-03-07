@@ -1,0 +1,62 @@
+// 
+// Bootstrap library functions for javascript
+// 
+
+:string, str, "String types": (
+    :#base, b: {
+        :i int8 0 
+        :v '__undef__'
+        :t [ 'string', 'str' ]
+    }
+    :set @isStr(s),  ( 
+        :b.v s
+        :b.i 1
+    )
+    :singleQuoted, SQ: ( -> @singleQuoted(base.v) )
+    :doubleQuoted, DQ: ( -> @doubleQuoted(base.v) )
+    :tmplQuoted,   TQ: ( -> @tmplQuoted(base.v) )
+)
+
+:number, num, "Number types": { 
+    :number arg  ( 
+        ( -> arg =~ /[d\.]+/ ) 
+    )
+
+    :digits string arg  ( 
+        :#v string ''
+        :check, ch, "validate input string": ( -> arg =~ /d+/ )
+        :set (  ch arg & :v arg  )
+
+    )
+
+    :int8 arg (  
+        :#v 
+        :set a ( arg >= -128 &  arg <= 127 ) & :v arg
+    )
+
+}
+
+:func, fn, "Function type": {
+    :#base, b: {
+        :i int8 0 
+        :d {} 
+        :t [ 'func', 'fn' ]
+    }
+    :set @isStr(s),  ( 
+        :b.v s
+        :b.i 1
+    )
+
+// :assert {
+//     :#base {
+//        :i int8 0
+//        :v false
+//         :t [ 'assert' ]
+//    }
+// }
+
+}  
+
+:itor, iterate, "Iterate over an Array or Object": [ fn, obj ] (
+    ( fn )
+)

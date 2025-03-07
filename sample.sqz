@@ -1,0 +1,76 @@
+
+
+
+
+:number arg  ( 
+    ( -> arg =~ /[d\.]+/ ) 
+)
+
+:digits arg  ( 
+    :#value 
+    ( -> arg =~ /d+/ ) 
+)
+
+:int8 arg (  
+    :v 
+    :set a ( arg >= -128 &  arg <= 127 ) & :v arg
+)
+
+:byte, uint8: arg ( 
+    ( arg >= 0 & arg < 256 )
+)
+
+:int16 arg ( 
+    ( arg >= -32768 & arg <= 32767 ) -> arg
+)
+
+:int32 arg ( 
+    ( arg >= -2147483648 & arg <= 2147483647 ) -> arg
+) 
+ 
+:int64, int: arg (
+    ( arg >= -9223372036854775808 & arg <= 9223372036854775807 ) -> arg
+)
+
+
+:[].size uint32 
+
+// -> ( $size & -> $size ^ -> 0 ) 
+
+:[].at int idx  ( 
+    (  idx > 0 & idx <= arr.size & -> arr[idx] )
+)
+
+[].at: str idx  ( 
+    (  idx > 0 & idx <= arr.size & -> arr[idx] )
+)
+
+:[].for ( 
+
+)
+
+: ^, xor: 
+
+:().data  ( 
+    ( $data.size  ) -> $data )
+
+: {}.type 
+
+
+
+
+
+:iterate, itor, "Loop through an array and return the values one by one by calling next":  { arr: int [] } ( 
+    :idx 1                                          
+    :next ( idx < arr.size & -> arr.at(idx++) ) 
+)
+
+
+
+:sampleFn int [] (     // function Declaration
+    :sum  int 0 (  iterate args -> ( sum : sum + intArr )  )
+)
+
+:sampleVal sampleFn [ 1,2,3,4,5 ] // function call
+
+sampleType = sampleFn.type
