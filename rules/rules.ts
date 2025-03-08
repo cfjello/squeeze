@@ -1,4 +1,4 @@
-import { ParserRules } from "../../parlexa/types.ts";
+import { MatchRecordExt, ParserRules } from "../../parlexa/types.ts";
 import { indent } from "../../parlexa/util.ts";
 import { LR } from "./lexer.ts";
 //
@@ -45,7 +45,8 @@ export const tokensArray = [
     'rhs',
     'objectDecl',
     'funcDecl',
-    'funcCallOrDecl',
+    'funcCall',
+    //'funcCallOrDecl',
     'callChain',
     'funcArgs',
     'funcBody',
@@ -119,7 +120,7 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'numericExpr', '1:1', 'xor'],
             [ 'stringExpr', '1:1', 'xor'],
             [ 'numCompExpr', '1:1', 'xor'],
-            [ 'funcCallOrDecl', '1:1' ]
+            [ 'funcCall', '1:1' ]
 
         ]
     },
@@ -128,8 +129,7 @@ export const PR: ParserRules<Tokens, UserData> = {
         expect: [
             [ 'delimList', '1:1', 'xor'],
             [ 'objectDecl', '1:1', 'xor'],
-            [ 'funcBody', '1:1', 'xor'],
-            [ 'funcCallOrDecl', '1:1'],
+            [ 'funcDecl', '1:1'],
         ]
     },
     argument: {
@@ -149,14 +149,16 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'argument', '1:1']
         ]
     },
+   
     funcArgs: {
         multi: '0:m',
+        breakOn: [LR.chain, LR.publish],   
         expect: [
             [ 'constant', '1:1', 'xor'],
             [ 'objectDecl', '1:1', 'xor'],
             [ 'emptyList', '1:1', 'xor'],
             [ 'delimList', '1:1', 'xor'],
-            [ LR.identifier, '1:1' ],  // Just an identifier 
+            [ LR.identifier, '1:1' ],
         ]   
     },
     listItems: {
@@ -205,6 +207,7 @@ export const PR: ParserRules<Tokens, UserData> = {
         expect: [
             [ LR.numericOper, '1:1'],
             [ 'number', '1:1', 'xor'],
+            [ LR.identifier, '1:1', 'xor'],
             [ 'evalGroup', '1:1'],
             [ 'numericRhs', '0:m']
         ]     
@@ -213,7 +216,7 @@ export const PR: ParserRules<Tokens, UserData> = {
         multi: '1:1',
         expect: [
             [ 'number', '1:1', 'xor'],
-            [ 'identifier', '1:1'],
+            [ LR.identifier, '1:1'],
             [ 'numericRhs', '1:1'],
         ]
     },
@@ -276,7 +279,8 @@ export const PR: ParserRules<Tokens, UserData> = {
         expect: [
             [ 'numCompArgs', '1:1', 'xor'],
             [ 'numCompGroup', '1:1'],
-            [ LR.compare, '1:1'],
+            [ LR.compare, '1:1', 'xor'],
+            [ LR.compLT, '1:1'],
             [ 'numCompArgs', '1:1', 'xor'],
             [ 'numCompGroup', '1:1'],
             [ LR.logic, '0:1']
@@ -309,7 +313,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'quotedString', '1:1' ]
         ]
     },
-
     assignList: {
         multi: '1:m',
             expect: [
@@ -326,17 +329,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'argument', '1:1'  ]
         ]
     },
-    
-    /*
-    extraAssign: {
-        multi: '0:m',
-        expect: [
-            [ LR.logicAnd, '1:1'],
-            [ 'singleAssign', '1:1'],
-            [ 'extraAssign', '0:m']
-        ]
-    },
-    */
     assignment: {
         multi: '1:m',
         expect: [
@@ -344,7 +336,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'extraAssign','0:m']
         ]
     },
-
     identifier: {
         multi: '0:m',
         expect: [
@@ -352,15 +343,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ LR.identifier, '1:1'],
         ]
     },
-    /*
-    funcIdent: {
-        multi: '0:m',
-        expect: [
-            [ LR.dot, '1:1'],
-            [ LR.funcIdent, '1:1'],
-        ]
-    },
-    */
     // 
     // Objects
     // 
@@ -375,37 +357,21 @@ export const PR: ParserRules<Tokens, UserData> = {
     //
     // functions
     //
-    /*
-    func: {
-    singleStmt: {
-        multi: '1:1',
-        expect: [
-            [ 'numericExpr', '1:1', 'xor'],
-            [ 'numCompExpr', '1:1', 'xor'],
-            [ 'stringExpr', '1:1',  'xor'],
-            // [ 'assignment', '1:1', 'xor'],
-            [ 'objectDecl', '1:1', 'xor'],
-            [ 'funcCallOrDecl', '1:1', 'xor'],
-            [ 'singleAssign', '1:1'],
-            [ 'funcReturn', '0:1']
-        ]
-    },
-    */
     statement: {
         multi: '1:m',
         expect: [
-            [ 'funcReturn', '0:1'],
+            [ LR.return, '0:1'],
             [ 'assignment', '1:1', 'xor'],
             [ 'expression', '1:1', 'xor'],
             [ 'objectDecl', '1:1', 'xor'],
-            [ 'funcCallOrDecl', '1:1'],
-
+            [ 'funcDecl', '1:1', 'xor'],
+            [ 'funcCall', '1:1']
         ]
     },
     funcReturn: {
         multi: '1:1',
         expect: [
-            [ LR.passOn, '1:1', 'xor'],
+            [ LR.chain, '1:1', 'xor'],
             [ LR.publish, '1:1']
         ]
     },
@@ -415,48 +381,46 @@ export const PR: ParserRules<Tokens, UserData> = {
         expect: [
             [ LR.lparen, '1:1'],
             [ 'statement', '1:m'],
-            // [ 'funcReturn', '0:1'],
             [ LR.rparen, '1:1'] 
         ]   
     },
-    // fn: args ( body )
-
     /*
     funcDecl: {
         multi: '1:1',
         expect: [
-            [ 'funcCallOrDecl', '1:1'],
-            [ 'funcBody', '1:1']
+            [ LR.lparen, '1:1'],
+            [ 'funcArgs', '0:m'],
+            [ LR.return, '0:1'],
+            [ 'funcBody', '1:1'],
+            [ LR.rparen, '1:1'],
         ]
     },
     */
-    callChain: {
+
+    funcDecl: {
         multi: '1:1',
         expect: [
-            [ LR.passOn, '1:1', 'xor'],
-            [ LR.publish],
-            [ 'funcCallOrDecl', '1:1']    
+            [ LR.return, '0:1'],
+            [ 'funcArgs', '0:m'],
+            [ 'funcBody', '1:1'],
         ]
     },
-    /*
-    funcCall: {
-        multi: '1:1',   
+
+
+    chain: {
+        multi: '1:1',
         expect: [
-            [ 'funcCallOrDecl', '1:1'],
-            [ 'callChain', '0:m']
+            [ 'funcCall', '1:1', 'xor'] ,
+            [ 'evalGroup', '1:1']  
         ]
     },
-    */
 
-
-
-    funcCallOrDecl: {
+    funcCall: { // The shared part of a function call and a function declaration
         multi: '1:1',
         expect: [
             [ LR.identifier, '1:1'],
             [ 'funcArgs', '0:m'],
-            [ 'funcBody', '0:1', 'xor'],
-            [ 'callChain', '0:m']
+            [ LR.chain, '0:1']
         ]
     },
     // 

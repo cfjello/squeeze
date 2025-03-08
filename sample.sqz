@@ -68,9 +68,31 @@
 
 
 :sampleFn int [] (     // function Declaration
-    :sum  int 0 (  iterate args -> ( sum : sum + intArr )  )
+    :sum  int 0 (iterate args -> ( sum: $sum + intArr ) )
 )
 
 :sampleVal sampleFn [ 1,2,3,4,5 ] // function call
 
 sampleType = sampleFn.type
+
+//
+// Function call types
+// 
+
+identifier Reference .var 
+
+deref .varArray ...varArray
+
+:fn00 int // illigal execpt if default is provided
+:fn00b 8 
+:fn   this as a string
+:fn  'string'
+:tmpl `text ${a}` // this runs immediately 
+:tmpl ( str a -> `text {$a}` ) // this is deferred
+:fn01 int [ 1,2,3 ]
+:fn02 {:a 1 ,:b 2}
+:fn03 int [ 1,2,3 ]
+
+:fnDecl ( int [1,2,3,4] -> (       ) )
+
+
