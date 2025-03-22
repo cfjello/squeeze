@@ -41,13 +41,16 @@
     (  idx > 0 & idx <= arr.size & -> arr[idx] )
 )
 
-[].at: str idx  ( 
+:[].at: str idx  ( 
     (  idx > 0 & idx <= arr.size & -> arr[idx] )
 )
 
-:[].for ( 
-
+:sum <- { inp: int [] }  ( 
+    :sumUp 0 
+    inp<int[]> ->-> [int ent<int>, str k, int i] ( sumUp: sumUp + ent  ) // implicit key, idx and value
 )
+
+
 
 : ^, xor: 
 
@@ -93,6 +96,6 @@ deref .varArray ...varArray
 :fn02 {:a 1 ,:b 2}
 :fn03 int [ 1,2,3 ]
 
-:fnDecl ( int [1,2,3,4] -> (       ) )
+:fnDecl <- int [1,2,3,4] -> (       ) 
 
 

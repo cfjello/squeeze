@@ -19,7 +19,8 @@ export const tokensArray = [
     'extraArgs',
     'delimList',
     'emptyList',
-    'namedArg',
+    'emptyObject',
+    // 'namedArg',
     'undelimList',
     'listItems',
     'numericLhs',
@@ -37,6 +38,7 @@ export const tokensArray = [
     'singleAssign',
     'extraAssign',
     'identList',
+    'identRef',
     'assignment',
     'multiInit',
     'assignment',
@@ -44,8 +46,10 @@ export const tokensArray = [
     'lhs',
     'rhs',
     'objectDecl',
+    'iterator',
     'funcDecl',
     'funcCall',
+    'extCallMapping',  
     //'funcCallOrDecl',
     'callChain',
     'funcArgs',
@@ -83,7 +87,8 @@ export const PR: ParserRules<Tokens, UserData> = {
     reset: {
         multi: '1:m',
         expect: [
-            [ 'singleAssign', '1:m' ]
+            [ 'singleAssign', '1:m' ],
+
         ]
     },
     eol: {  
@@ -141,6 +146,7 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'declaration', '1:1'],
         ]
     },
+    /*
     namedArg: {
         multi: '1:1',
         expect: [
@@ -149,23 +155,24 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'argument', '1:1']
         ]
     },
-   
+    */
     funcArgs: {
-        multi: '0:m',
+        multi: '0:1',
         breakOn: [LR.chain, LR.publish],   
         expect: [
             [ 'constant', '1:1', 'xor'],
             [ 'objectDecl', '1:1', 'xor'],
             [ 'emptyList', '1:1', 'xor'],
+            [ 'emptyObject', '1:1', 'xor'],
             [ 'delimList', '1:1', 'xor'],
-            [ LR.identifier, '1:1' ],
+            [ 'identRef', '1:1' ],
         ]   
     },
     listItems: {
         breakOn: [LR.rbracket],
         expect: [
             [ LR.comma, '1:1'],
-            [ 'namedArg', '1:1', 'xor'],
+            [ 'singleAssign', '1:1', 'xor'],
             [ 'argument', '1:1', 'xor'],
             [ 'delimList', '1:1'],
             [ 'listItems', '0:m']
@@ -175,7 +182,7 @@ export const PR: ParserRules<Tokens, UserData> = {
         multi: '1:1',
         expect: [
             [ LR.lbracket, '1:1'],
-            [ 'namedArg', '1:1', 'xor'],
+            [ 'singleAssign', '1:1', 'xor'],
             [ 'argument', '1:1', 'xor'],
             [ 'delimList', '1:1'],
             [ 'listItems', '0:m'],
@@ -187,6 +194,13 @@ export const PR: ParserRules<Tokens, UserData> = {
         expect: [
             [ LR.lbracket, '1:1'],
             [ LR.rbracket, '1:1']
+        ]
+    },
+    emptyObject: {
+        multi: '1:1',
+        expect: [
+            [ LR.lbrace, '1:1'],
+            [ LR.rbrace, '1:1']
         ]
     },
     /*
@@ -207,7 +221,7 @@ export const PR: ParserRules<Tokens, UserData> = {
         expect: [
             [ LR.numericOper, '1:1'],
             [ 'number', '1:1', 'xor'],
-            [ LR.identifier, '1:1', 'xor'],
+            [ 'identRef', '1:1', 'xor'],
             [ 'evalGroup', '1:1'],
             [ 'numericRhs', '0:m']
         ]     
@@ -216,11 +230,12 @@ export const PR: ParserRules<Tokens, UserData> = {
         multi: '1:1',
         expect: [
             [ 'number', '1:1', 'xor'],
-            [ LR.identifier, '1:1'],
+            [ 'identRef', '1:1'],
             [ 'numericRhs', '1:1'],
         ]
     },
     numericExpr: {
+        breakOn: [LR.comma],
         multi: '1:1',
         expect: [
             [ 'numericLhs', '1:1', 'xor'],
@@ -275,6 +290,7 @@ export const PR: ParserRules<Tokens, UserData> = {
         ]
     },
     numCompExpr: {
+        breakOn: [LR.comma],
         multi: '1:1',
         expect: [
             [ 'numCompArgs', '1:1', 'xor'],
@@ -292,7 +308,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'numCompExpr', '1:1']
         ]      
     },
-
    //
    // Initializers
    //
@@ -304,12 +319,11 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'singleAssign', '1:1']
         ]
     },
-   
     assignListEnt: {    
         multi: '1:1',
         expect: [
             [ LR.comma, '1:1'],
-            [ LR.identifier, '1:1', 'xor'],
+            [ LR.singleIdent, '1:1', 'xor'],
             [ 'quotedString', '1:1' ]
         ]
     },
@@ -317,14 +331,15 @@ export const PR: ParserRules<Tokens, UserData> = {
         multi: '1:m',
             expect: [
                 [ 'assignListEnt' , '1:m'],
-                [ LR.colon, '1:1'],
+                [ LR.colon, '1:1' ]
             ]
     },
     singleAssign: {
         multi: '1:m',
         expect: [
-            [ LR.colon, '1:1'],
-            [ LR.identifier, '1:1'],
+            [ LR.colon, '1:1', 'xor'],
+            [ LR.tilde, '1:1'],  
+            [ LR.declIdent, '1:1'],
             [ 'assignList', '1:m', 'xor'],
             [ 'argument', '1:1'  ]
         ]
@@ -339,8 +354,25 @@ export const PR: ParserRules<Tokens, UserData> = {
     identifier: {
         multi: '0:m',
         expect: [
-            [ LR.dot, '1:1'],
+            [ LR.singleDot, '1:1'],
             [ LR.identifier, '1:1'],
+        ]
+    },
+
+    pathPrefix: {
+        multi: '1:1',
+        expect: [
+            [ LR.pathIdent, '0:1'],
+        ]   
+    },
+
+    identRef: {
+        multi: '1:1',
+        expect: [
+            [ LR.pathPrefix, '0:1', 'xor'],
+            [ LR.doubleDot, '0:1'],
+            [ LR.identDotted, '1:1', 'xor'],
+            [ LR.singleIdent, '1:1']
         ]
     },
     // 
@@ -357,25 +389,44 @@ export const PR: ParserRules<Tokens, UserData> = {
     //
     // functions
     //
+    declIdent: {
+        multi: '1:1',
+        expect: [
+            [ LR.comma, '1:1'],
+            [ LR.declIdent, '1:1'],
+        ]
+    },
+    iterator: {
+        multi: '1:1',
+        expect: [
+            [ LR.feed, '1:1'],
+            [ 'identRef' , '1:1'], // the values to feed from the iterator
+            // [ 'identRef', '0:1'],
+            // [ LR.singleIdent, '1:3'], // all value here can be inferred -they are value, idx, key 
+            [ LR.chain, '0:1'],
+            [ 'funcBody', '1:1' ],
+        ]
+    },
     statement: {
         multi: '1:m',
         expect: [
             [ LR.return, '0:1'],
+            [ 'extCallMapping', '1:1', 'xor'],
             [ 'assignment', '1:1', 'xor'],
             [ 'expression', '1:1', 'xor'],
             [ 'objectDecl', '1:1', 'xor'],
             [ 'funcDecl', '1:1', 'xor'],
+            [ 'iterator', '1:1', 'xor'],
             [ 'funcCall', '1:1']
         ]
     },
     funcReturn: {
         multi: '1:1',
         expect: [
-            [ LR.chain, '1:1', 'xor'],
+            [ LR.return, '1:1', 'xor'],
             [ LR.publish, '1:1']
         ]
     },
-
     funcBody: { 
         multi: '1:1',
         expect: [
@@ -384,19 +435,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ LR.rparen, '1:1'] 
         ]   
     },
-    /*
-    funcDecl: {
-        multi: '1:1',
-        expect: [
-            [ LR.lparen, '1:1'],
-            [ 'funcArgs', '0:m'],
-            [ LR.return, '0:1'],
-            [ 'funcBody', '1:1'],
-            [ LR.rparen, '1:1'],
-        ]
-    },
-    */
-
     funcDecl: {
         multi: '1:1',
         expect: [
@@ -405,8 +443,6 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'funcBody', '1:1'],
         ]
     },
-
-
     chain: {
         multi: '1:1',
         expect: [
@@ -414,105 +450,23 @@ export const PR: ParserRules<Tokens, UserData> = {
             [ 'evalGroup', '1:1']  
         ]
     },
-
+    extCallMapping: {
+        multi: '1:1',
+        expect: [
+            [ LR.atSign, '1:1'],
+            [ 'identRef', '1:1'],
+            [ LR.lparen, '1:1'],
+            [ LR.singleIdent, '1:1'],
+            [ LR.rparen, '1:1'],
+        ]
+    },
     funcCall: { // The shared part of a function call and a function declaration
         multi: '1:1',
         expect: [
-            [ LR.identifier, '1:1'],
+            [ 'identRef', '1:1', 'or'],
             [ 'funcArgs', '0:m'],
-            [ LR.chain, '0:1']
+            [ LR.chain, '0:1', 'xor'],
+            [ 'iterator', '0:1']
         ]
     },
-    // 
-    // LHS identifiers 
-    // 
-      /*
-    lhsList: {
-        multi: '0:m',
-        expect: [
-            [ LR.comma, '1:1'],
-            [ LR.identifier, '1:1'],
-            [ 'lhsList', '0:m']
-        ]
-    },
-  
-    lhs: {
-        multi: '1:1',
-        expect: [
-            [ LR.identifier, '1:1'],
-            [ 'lhsList', '0:1']
-        ],
-    },
-    rhs: {
-        multi: '1:1',
-        expect: [
-            [ 'argument', '1:1'],
-            [ 'eol', '1:1']
-        ],
-    },
-    extraAssigns : { 
-        multi: '0:m', 
-        expect: [ 
-            [ 'eol', '1:1'],
-            [ 'singleAssign', '1:1'],
-            [ 'extraAssigns', '0:m']
-        ]           
-    },
-    singleAssign : {    
-        multi: '1:1', 
-        breakOn: [LR.NL],
-        expect: [ 
-            [ 'lhs', '1:1'],
-            [ LR.colon, '1:1'], 
-            [ 'rhs', '1:1']
-        ]
-    },
-    assignment: {
-        multi: '1:1',
-        expect: [
-            [ LR.identifier, '1:1'],
-            [ LR.colon, '1:1'],
-            [ 'rhs', '1:1'],
-            [ 'extraAssigns', '0:m'],
-        ]
-    },
-    */
-    /*
-    scope: {
-        multi: '1:1',
-        expect: [
-            [ LR.lbrace, '1:1'],
-            [ LR.NL, '0:m'],
-            [ 'assignment', '1:m'],
-            [ LR.rbrace, '1:1'],
-            [LR.NL, '0:m'],
-        ]
-    },  
-    */
-    /*
-    arg: {
-        multi: '1:1',
-        expect: [
-            [ 'assignment', '1:1', 'xor'],
-            [ LR.identifier, '1:1']     
-        ]
-    },
-    extraArgs: {    
-        multi: '0:m', 
-        expect: [
-            [ LR.comma, '1:1'],
-            [ LR.identifier, '1:1'],
-            [ 'extraArgs', '0:m']
-        ]
-    },
-    funcArgs: {
-        multi: '0:m',
-        expect: [
-            [ LR.identifier, '1:1'], 
-            [ 'extraArgs', '0:m']
-        ]
-    },  
-
-    */
-   
 }

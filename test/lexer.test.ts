@@ -155,3 +155,94 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false
 })
+
+Deno.test({
+    name: '09 - Lexer matches "chain" and "feed"', 
+    fn: () => {  
+        let str  = '->'
+        const matcher: XRegExp.ExecArray | null = XRegExp.exec(str, LR.chain , 0, 'sticky')
+        assert( matcher !== null)
+        str = '>>'
+        const matcher_02: XRegExp.ExecArray | null = XRegExp.exec(str, LR.feed , 0, 'sticky')
+        assert( matcher_02 !== null)
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+
+Deno.test({
+    name: '09 - Lexer matches an identifier prefix double dot', 
+    fn: () => {  
+        const str  = '..'
+        const matcher: XRegExp.ExecArray | null = XRegExp.exec(str, LR.doubleDot , 0, 'sticky')
+        assert( matcher !== null)
+
+        // const matcher : XRegExp.ExecArray | null = XRegExp.exec(str, LR.feed , 0, 'sticky')
+        assertEquals( matcher.groups?.value, str ) 
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+Deno.test({
+    name: '10 - Lexer matches a path identifier with a slash', 
+    fn: () => {  
+        let str  = 'pathIdent/'
+        const matcher: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathIdent , 0, 'sticky')
+        assert( matcher !== null)
+        assertEquals( matcher.groups?.value, 'pathIdent/' ) 
+
+        str = 'ident01/ident02/ident03/'
+        const matcher_02: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathIdent , 0, 'sticky')
+        assert( matcher_02 !== null)  
+        assertEquals( matcher_02.groups?.value, str)  
+
+        str = 'ident01/ident02/ident03'
+        const matcher_03: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathIdent , 0, 'sticky')
+        assert( matcher_03 !== null)
+        assertEquals( matcher_03.groups?.value, 'ident01/ident02/')
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+
+Deno.test({
+    name: '11 - Lexer matches a path prefix', 
+    fn: () => {  
+        let str  = '../../..'
+        const matcher: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathPrefix , 0, 'sticky')
+        assert( matcher !== null)
+        assertEquals( matcher.groups?.value, str) 
+
+        str = '../'
+        const matcher_02: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathPrefix , 0, 'sticky')
+        assert( matcher_02 !== null)
+        assertEquals( matcher_02.groups?.value, str)
+      
+        str = './'
+        const matcher_03: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathPrefix , 0, 'sticky')
+        assert( matcher_03?.groups?.value !==  str)
+
+        str = '.'
+        const matcher_04: XRegExp.ExecArray | null = XRegExp.exec(str, LR.pathPrefix , 0, 'sticky')
+        assert( matcher_04?.groups?.value !==  str)
+
+
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+Deno.test({
+    name: '12 - Lexer matches a regex operator', 
+    fn: () => {  
+        const str  = '/d+Xd+/'
+        const matcher: XRegExp.ExecArray | null = XRegExp.exec(str, LR.regex , 0, 'sticky')
+        assert( matcher !== null)
+        assertEquals( matcher.groups?.value, str ) 
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})

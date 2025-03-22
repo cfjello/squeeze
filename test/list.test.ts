@@ -77,8 +77,7 @@ Deno.test({
   
         const tree = parser.getParseTree()
         // console.log(JSON.stringify(tree, null, 2))
-        const matcher_00 = tree.filter( v => (v.token === 'identifier' && v.type == 'terminal' && v.matched ) )
-        // console.log(matcher_00)
+        const matcher_00 = tree.filter( v => (v.token === 'singleIdent' && v.type == 'terminal' && v.matched ) )
         assert( matcher_00.length === 4 )
         const matcher_01 = tree.filter( v => (v.token === 'comma' && v.matched ) )
         assert( matcher_01.length === 5  )

@@ -16,7 +16,7 @@ Deno.test({
         assert( matcher_00.length === 2  )
 
    
-        const matcher_01 = tree.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
+        const matcher_01 = tree.filter( v => (v.token === 'singleIdent' && v.type === 'terminal' && v.matched ) )
         assert( matcher_01.length === 2  )
 
         const matcher_02 = tree.filter( v => (v.token === 'singleQuoted' && v.type === 'terminal' && v.matched ) )
@@ -62,10 +62,10 @@ Deno.test({
 })
 
 Deno.test({
-    name: '03 - Parsing an object initializer with function initializers', 
+    name: '03 - Parsing an object initializer with mutable function initializers', 
     fn: () => {  
         // const input_01 = `  { a: int 89  , b: fruits ['orange', 'grape', 'apple'] } `
-        const input_01 = `  { :a int 89  , :b fruits ['orange', 'grape', 'apple'] } `
+        const input_01 = `  { :~ a int 89  , ~ b fruits ['orange', 'grape', 'apple'] } `
         // const input_01 = `  sumUp :  89, 99 , 100  ( for i in args  { sum += i } )`
         // const input_011 = `  sumUp :  [ 89, 99 , 100 ]  ( for i in args  { sum += i } )`
         // const input_02 = `  calcSum :  {a: int 15  , b: int 89}  ( -> a + b  ) -> ( -> )`
@@ -81,6 +81,24 @@ Deno.test({
         // console.log(matcher_01)
         assert( matcher_01.length === 1  )
         
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+Deno.test({
+    name: '04 - Failing a "single identifier" assignment - (expect to see a parser error)', 
+    fn: () => {  
+        const input_01 = ": this.Is.NOT.Single.Identifier. 'my random variable' "
+        const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'singleAssign')
+        parser.debug = false
+        parser.always = 'whitespace'
+        parser.reset(input_01)
+
+        const tree = parser.getParseTree()
+        const matcher_00 = tree.filter( v => (v.token === 'singleIdent' && v.type === 'terminal' && v.matched ) )
+        assert( matcher_00.length === 0 )
+
     },
     sanitizeResources: false,
     sanitizeOps: false

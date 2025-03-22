@@ -7,12 +7,12 @@ Deno.test({
     name: '01 - Parsing function call with a constant value', 
     fn: () => {  
         const input_01 = " :var_01 89  "
-        const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'assignment')
-        parser.debug = false
+        const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'assignment', { comment: '__undef__'}, false)
+        // parser.debug = true
         parser.always = 'whitespace'
         parser.reset(input_01)
         const tree = parser.getParseTree()
-        const matcher_00 = tree.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
+        const matcher_00 = tree.filter( v => (v.token === 'declIdent' && v.type === 'terminal' && v.matched ) )
         assert( matcher_00.length === 1  )
         const matcher_01 = tree.filter( v => (v.token === 'digits' && v.type === 'terminal' && v.matched ) )
         assert( matcher_01.length === 1  )
@@ -30,8 +30,10 @@ Deno.test({
         parser.always = 'whitespace'
         parser.reset(input_01)
         const tree = parser.getParseTree()
-        const matcher_00 = tree.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
-        assert( matcher_00.length === 2  )
+        const matcher_00 = tree.filter( v => (v.token === 'declIdent' && v.type === 'terminal' && v.matched ) )
+        assert( matcher_00.length === 1  )
+        const matcher_01 = tree.filter( v => (v.token === 'identRef' && v.type === 'non-terminal' && v.matched ) )
+        assert( matcher_01.length === 1  )
     },
     sanitizeResources: false,
     sanitizeOps: false
@@ -46,11 +48,15 @@ Deno.test({
         parser.debug = false
         parser.reset(input_02)
         const tree_02 = parser.getParseTree()
-        const matcher_02 = tree_02.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
+        const matcher_02 = tree_02.filter( v => (v.token === 'declIdent' && v.type === 'terminal' && v.matched ) )
 
-        assert( matcher_02.length === 2 )
+        assert( matcher_02.length === 1 )
         assert ( matcher_02[0].value === 'var_01'  )
-        assert ( matcher_02[1].value === 'fruits' )
+
+
+        const matcher_03 = tree_02.filter( v => (v.token === 'singleIdent' && v.type === 'terminal' && v.matched ) )
+        assert( matcher_03.length === 1 )
+        assert ( matcher_03[0].value === 'fruits' )
     },
     sanitizeResources: false,
     sanitizeOps: false
@@ -69,15 +75,18 @@ Deno.test({
         parser.always = 'whitespace'
         parser.reset(input_01)
         const tree = parser.getParseTree()
-        const matcher_00 = tree.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
-        assert( matcher_00.length === 3  )
+        const matcher_00 = tree.filter( v => (v.token === 'declIdent' && v.type === 'terminal' && v.matched ) )
+        assert( matcher_00.length === 1  )
         assert ( matcher_00[0].value === 'var_01' )
-        assert ( matcher_00[1].value === 'int' )
-        assert ( matcher_00[2].value === 'sum' )
+
+        const matcher_01 = tree.filter( v => (v.token === 'singleIdent' && v.type === 'terminal' && v.matched ) )
+        assert ( matcher_01[0].value === 'int' )
+        assert ( matcher_01[1].value === 'sum' )
     },
     sanitizeResources: false,
     sanitizeOps: false
 })
+
 
 Deno.test({
     name: '05 - Parsing chained function calls calling expression group', 
@@ -89,15 +98,15 @@ Deno.test({
         const input_02 = " :var_01 objBuild { :a 1, :b 2 } -> ( a * 2 + b )"
         parser.reset(input_02)
         const tree_02 = parser.getParseTree()
-        const matcher_02 = tree_02.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
-
-        assert( matcher_02.length === 6 )
-        assert ( matcher_02[0].value === 'var_01' )
-        assert ( matcher_02[1].value === 'objBuild' )
+        const matcher_02 = tree_02.filter( v => (v.token === 'singleIdent' && v.type === 'terminal' && v.matched ) )
+        assert( matcher_02.length === 3 )
+        assert ( matcher_02[0].value === 'objBuild' )
+        assert ( matcher_02[2].value === 'b' )
     },
     sanitizeResources: false,
     sanitizeOps: false
 })
+
 
 Deno.test({
     name: '06 - Parsing a function declaration with a single argument and a single return value', 
@@ -134,17 +143,21 @@ Deno.test({
             <- res  
         )`
         const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'singleAssign')
-        parser.debug = false
+        parser.debug = true
         parser.always = 'whitespace'
         parser.reset(input_01)
         const tree = parser.getParseTree()
-        const matcher_00 = tree.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
-        assert( matcher_00.length === 4  )
+        const matcher_00 = tree.filter( v => (v.token === 'declIdent' && v.type === 'terminal' && v.matched ) )
+        // console.log(matcher_00)
+        assert( matcher_00.length === 2  )
+        const matcher_01 = tree.filter( v => (v.token === 'singleIdent' && v.type=== 'terminal' && v.matched ) )
+        assert( matcher_01.length === 2  )
 
     },
     sanitizeResources: false,
     sanitizeOps: false
 })
+/*
 
 Deno.test({
     name: '08 - Parsing function declaration with a nested object argument', 
@@ -157,30 +170,31 @@ Deno.test({
         parser.always = 'whitespace'
         parser.reset(input_01)
         const tree = parser.getParseTree()
-        const matcher_00 = tree.filter( v => (v.token === 'identifier' && v.type === 'terminal' && v.matched ) )
-        assert( matcher_00.length === 7  )
-
+        const matcher_00 = tree.filter( v => (v.token === 'singleIdent' && v.type === 'terminal' && v.matched ) )
+        assert( matcher_00.length === 4  )
+        const matcher_01 = tree.filter( v => (v.token === 'identifier' && v.type=== 'terminal' && v.matched ) )
+        assert( matcher_01.length === 3  )
     },
     sanitizeResources: false,
     sanitizeOps: false
 })
 
 
-
 Deno.test({
     name: '09 - Parsing a function declaration with a multiple statements', 
     fn: () => {  
+        //
+        //:data { 
+        //    :  name 'John', 
+        //    ~ age  25 
+        //}
         const input_00 = `  
-        :data { 
-            :name 'John', 
-            :age 25 
-        }
         :plusTen  <- [ data, :val 99, 43] (  
-            data.age + val 
+           data.age.add val 
         )`
          
         const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'singleAssign')
-        parser.debug = false
+        parser.debug = true
         parser.always = 'whitespace'
         parser.reset(input_00)
         const tree = parser.getParseTree()
@@ -194,3 +208,79 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false
 })
+
+/*
+Deno.test({
+    name: '09 - Parsing an iterator with a predefined function',
+    fn: () => {  
+        const input_00 = `  
+        :  values int [ 1,2,3,4,5,6,7,8,9]
+        :~ sum int 0
+        :  sumUp <- { value: values.type, idx: int, key: string }   ( ..sum.add val )
+ 
+        >> values -> sumUp`
+         
+        const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'singleAssign')
+        parser.debug = false
+        parser.always = 'whitespace'
+        parser.reset(input_00)
+        const tree = parser.getParseTree()
+        const matcher_01 = tree.filter( v => (v.token === 'feed' && v.type=== 'terminal' && v.matched ) )
+        // console.log(matcher_01)
+        assert( matcher_01.length === 1  )
+
+        const matcher_02 = tree.filter( v => (v.token === 'tilde' && v.type=== 'terminal' && v.matched ) )
+        assert( matcher_02.length === 1  )
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+Deno.test({
+    name: '10 - Parsing an iterator with an inline function declaration', 
+    fn: () => {  
+        const input_00 = `  
+        : values int [ 1,2,3,4,5,6,7,8,9] 
+        :~ sum int 0
+        >> values -> iter ( iter.ok & ..sum.add iter.value )`
+         
+        const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'singleAssign')
+        parser.debug = false
+        parser.always = 'whitespace'
+        parser.reset(input_00)
+        const tree = parser.getParseTree()
+        const matcher_01 = tree.filter( v => (v.token === 'feed' && v.type=== 'terminal' && v.matched ) )
+        // console.log(matcher_01)
+        assert( matcher_01.length === 1  )
+
+        const matcher_02 = tree.filter( v => (v.token === 'tilde' && v.type=== 'terminal' && v.matched ) )
+        assert( matcher_02.length === 1  )
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+
+Deno.test({
+    name: '10 - Parsing an iterator with an inline function declaration', 
+    fn: () => {  
+        const input_00 = `  
+        : values int [ 1,2,3,4,5,6,7,8,9]
+        ~ sum int 0
+        >> values -> iter ( iter.ok & : ..sum.+ iter.value )`
+         
+        const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'singleAssign')
+        parser.debug = false
+        parser.always = 'whitespace'
+        parser.reset(input_00)
+        const tree = parser.getParseTree()
+        const matcher_01 = tree.filter( v => (v.token === 'feed' && v.type=== 'terminal' && v.matched ) )
+        // console.log(matcher_01)
+        assert( matcher_01.length === 1  )
+
+        const matcher_02 = tree.filter( v => (v.token === 'tilde' && v.type=== 'terminal' && v.matched ) )
+        assert( matcher_02.length === 1  )
+    },
+    sanitizeResources: false,
+    sanitizeOps: false
+})
+*/

@@ -2,20 +2,61 @@
 // Bootstrap library functions for javascript
 // 
 
-:string, str, "String types": (
-    :#base, b: {
-        :i int8 0 
-        :v '__undef__'
-        :t [ 'string', 'str' ]
-    }
-    :set @isStr(s),  ( 
-        :b.v s
-        :b.i 1
-    )
-    :singleQuoted, SQ: ( -> @singleQuoted(base.v) )
-    :doubleQuoted, DQ: ( -> @doubleQuoted(base.v) )
-    :tmplQuoted,   TQ: ( -> @tmplQuoted(base.v) )
+
+:error, err,  "Error Handling": <- { :msg ( 
+
 )
+
+:exists <- val ( <- @isDefined(val) )
+:valid  <- val ( <- @isDefined(val) & @ val.ok )    
+
+:infer <- val ( 
+    ( exists val.types & )
+)
+
+:byte arg (  
+    :#v 
+    :set a ( arg >= -128 &  arg <= 127 ) & :v arg
+)
+
+// predefined type are: 
+
+// Enclosure style string type 
+:string, str, "String types": <- { :val ? } (
+    // private variable data part
+    :   name    'string'
+    ~   value   '__undef__'
+    :   type    str [ 'string', 'str' ] // Type names can be added
+    :   init    int8 1
+    :   size    int  0
+    :   ok      false
+    :   err     '__undef__'
+
+    // public static part that have access
+    // to the private part and the call arguments 
+    <- ( 
+        : quotes <- @quotes(..value)
+        : get <- :name '' ( 
+            <- ..[name] 
+        ) 
+        : set <- :val  ( 
+            ~ ret ? 
+            ( val.type = ../name.type  & ../name.mutable & ../value val & size @strSize(val) & ok true ) ^ err `set failed for: ${val}` 
+        ) 
+    )
+)
+
+
+// :in_range, inRange, "Range check for Arrays and Objects": {
+// }
+
+
+
+:init, "State of initialization": <- int8 arg (
+    :states [ 'declared' | 'defaulted' | 'sealed' ]
+    ( states.length >= 0 & states.length <  )
+)
+
 
 :number, num, "Number types": { 
     :number arg  ( 
@@ -43,8 +84,8 @@
         :t [ 'func', 'fn' ]
     }
     :set @isStr(s),  ( 
-        :b.v s
-        :b.i 1
+        :
+        :..b.i 1
     )
 
 // :assert {
@@ -57,6 +98,12 @@
 
 }  
 
-:itor, iterate, "Iterate over an Array or Object": [ fn, obj ] (
-    ( fn )
+:iterate, iter, "Iterate over an Array or Object": <- [] | {} (
+    ~i 0
+    ~key 0
+    ( )
 )
+
+
+>> data -> { :key string , :idx int , :value data.type } ( )
+
