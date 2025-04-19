@@ -1,0 +1,32 @@
+
+
+number : ( 
+    -> arg[1] =~ /d{1,}\.{1}d{1,}/ ) 
+)
+
+digits : ( 
+    -> arg : ..  
+    <- arg =~ /d+/
+)
+
+signed byte, int8: (  
+    # arg  
+    :set a ( arg >= -128 &  arg <= 127 ) & :v arg
+)
+
+calculate sum, calcSum : ( 
+   args : int []
+   sum  ~ int 0
+   args >> sum += args.value
+   <- sum
+) 
+
+continuous sum, conSum : ( 
+    -> args: integer  [] // this is the contract
+    => identName   // storeName dependencies
+    <- (
+        sum ~ number 0 // not an enclosure, conserved between calls
+        args >> sum ~+ args.value   // fixed: args.idx, args.idxStr , args.value, args.self , args.name, args.type 
+        <- sum       // return type is Sum.type
+    )
+)

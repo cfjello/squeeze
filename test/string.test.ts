@@ -9,7 +9,6 @@ Deno.test({
         const input_01 = " 'æblegrød' "
         const parser = new Parser<LexerTokens, Tokens, UserData>( LR, PR, 'quotedString')
         parser.debug = false
-        parser.always = 'whitespace'
         parser.reset(input_01)
   
         const tree = parser.getParseTree()
@@ -44,3 +43,4 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false
 })
+
